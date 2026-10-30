@@ -1,0 +1,8 @@
+finaidfunctionsbuild
+finaidmicroappsrelease
+finaidfunctionsrelease
+finaidfunctionsreleasenprod
+testing
+finaidmicroappsbuildnprod
+finaidmicroappsbuild
+finaidmicroappsreleasenprod

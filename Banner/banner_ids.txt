@@ -1,0 +1,8 @@
+BannerJobs,WU
+BannerJobs,CU
+BannerJobs,AUC
+BannerJobs,RUSM-RUSVM
+AUCReleasePipelinenprod
+CUReleasePipelinenprod
+RUSMRUSVMReleasePipelinenprod
+WUReleasePipelinenprod
