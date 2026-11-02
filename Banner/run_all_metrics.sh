@@ -3,6 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# All four metrics run for each pipeline before moving to the next, so the batch
+# pause in run_all_pipelines.sh (BATCH_SIZE / BATCH_PAUSE_SECONDS) covers all four.
 METRIC_SCRIPTS=(
   "lead-time-forchange.sh"
   "deployment-frequency.sh"
@@ -10,20 +12,11 @@ METRIC_SCRIPTS=(
   "change-failure-rate.sh"
 )
 
-FAILED_METRICS=()
-for metric_script in "${METRIC_SCRIPTS[@]}"; do
-  echo "=========================================="
-  echo "=== Running metric: $metric_script ==="
-  echo "=========================================="
-  if ! SCRIPT_PATH="${SCRIPT_DIR}/${metric_script}" "${SCRIPT_DIR}/run_all_pipelines.sh"; then
-    echo "!!! Metric run failed: $metric_script" >&2
-    FAILED_METRICS+=("$metric_script")
-  fi
-  echo
-done
+SCRIPT_PATHS="$(printf '%s\n' "${METRIC_SCRIPTS[@]/#/${SCRIPT_DIR}/}")"
+export SCRIPT_PATHS
 
-if [[ ${#FAILED_METRICS[@]} -gt 0 ]]; then
-  echo "Completed with failing metrics: ${FAILED_METRICS[*]}" >&2
+if ! "${SCRIPT_DIR}/run_all_pipelines.sh"; then
+  echo "Completed with failures (listed above)." >&2
   exit 1
 fi
 echo "All 4 DORA metrics processed successfully for all pipelines."

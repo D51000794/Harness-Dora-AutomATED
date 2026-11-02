@@ -1,1 +1,4 @@
 chmod +x *.sh
+./run_all_metrics.sh                                    # default: 5 pipelines, then 5 min pause
+BATCH_SIZE=10 BATCH_PAUSE_SECONDS=120 ./run_all_metrics.sh   # change it for one run
+BATCH_SIZE=0 ./run_all_metrics.sh                       # no pausing (small lists)
