@@ -1,0 +1,15 @@
+APGFunctionsreleasenprod
+APG_Functions_build
+test_poc
+test_poc_release
+test
+APGMicroappsbuildnprod
+APGFunctionsrelease
+function_prod_replace_test
+APGMicroappsreleasenprod
+APGPortalreleasenprod
+APGPortalbuildnprod
+APGPortalrelease
+APGPortalbuild
+APGMicroappsrelease
+APGMicroappsbuild

@@ -13,6 +13,12 @@ fi
 ORG_ID="${ORG_ID:-RPA}"
 PROJECT_ID="${PROJECT_ID:-Build_Deploy}"
 ENVIRONMENT="${ENVIRONMENT:-dev}"
+
+# One time window for the whole run, so all four metric scripts ask the API for
+# the same window and it can serve them from one Harness fetch per pipeline.
+END_TIME="${END_TIME:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+START_TIME="${START_TIME:-$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)}"
+export START_TIME END_TIME
 PIPELINE_LIST_FILE="${PIPELINE_LIST_FILE:-${SCRIPT_DIR}/rpa.txt}"
 
 # Pacing: after every BATCH_SIZE pipelines, wait BATCH_PAUSE_SECONDS so the Harness
