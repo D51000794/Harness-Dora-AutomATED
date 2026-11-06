@@ -23,7 +23,7 @@ PIPELINE_LIST_FILE="${PIPELINE_LIST_FILE:-${SCRIPT_DIR}/faculty_impact_ids.txt}"
 
 # Pacing: after every BATCH_SIZE pipelines, wait BATCH_PAUSE_SECONDS so the Harness
 # calls (and the GitHub reads behind them) are spread out. BATCH_SIZE=0 turns it off.
-BATCH_SIZE="${BATCH_SIZE:-5}"
+BATCH_SIZE="${BATCH_SIZE:-0}"
 BATCH_PAUSE_SECONDS="${BATCH_PAUSE_SECONDS:-300}"
 
 # Metric scripts to run for each pipeline, one path per line. run_all_metrics.sh sets
