@@ -26,13 +26,17 @@ PIPELINE_LIST_FILE="${PIPELINE_LIST_FILE:-${SCRIPT_DIR}/faculty_impact_ids.txt}"
 BATCH_SIZE="${BATCH_SIZE:-0}"
 BATCH_PAUSE_SECONDS="${BATCH_PAUSE_SECONDS:-300}"
 
+# Resume: START_AT=131 skips the first 130 pipelines in the list (use the [n/total]
+# number of the first pipeline that did not finish). Default 1 = start at the top.
+START_AT="${START_AT:-1}"
+
 # Metric scripts to run for each pipeline, one path per line. run_all_metrics.sh sets
 # all four; on its own this runs SCRIPT_PATH (default: change failure rate).
 SCRIPT_PATHS="${SCRIPT_PATHS:-${SCRIPT_PATH:-${SCRIPT_DIR}/change-failure-rate.sh}}"
 mapfile -t SCRIPTS <<< "$SCRIPT_PATHS"
 
-if [[ ! "$BATCH_SIZE" =~ ^[0-9]+$ || ! "$BATCH_PAUSE_SECONDS" =~ ^[0-9]+$ ]]; then
-  echo "Error: BATCH_SIZE and BATCH_PAUSE_SECONDS must be whole numbers" >&2
+if [[ ! "$BATCH_SIZE" =~ ^[0-9]+$ || ! "$BATCH_PAUSE_SECONDS" =~ ^[0-9]+$ || ! "$START_AT" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: BATCH_SIZE, BATCH_PAUSE_SECONDS and START_AT must be whole numbers (START_AT >= 1)" >&2
   exit 1
 fi
 
@@ -57,6 +61,10 @@ fi
 
 FAILED=()
 DONE=0
+RAN=0
+if (( START_AT > 1 )); then
+  echo "Resuming at pipeline ${START_AT}/${TOTAL} (skipping the first $(( START_AT - 1 )))."
+fi
 # Each line: <pipeline_id> or <pipeline_id>,<institution>. The institution form is for a
 # shared pipeline run by several institutions' input sets (see banner_ids.txt).
 while IFS=, read -r PIPELINE_ID INSTITUTION || [[ -n "${PIPELINE_ID:-}" ]]; do
@@ -64,11 +72,16 @@ while IFS=, read -r PIPELINE_ID INSTITUTION || [[ -n "${PIPELINE_ID:-}" ]]; do
   INSTITUTION="$(echo "${INSTITUTION:-}" | tr -d '\r' | xargs)"
   [[ -z "$PIPELINE_ID" || "$PIPELINE_ID" == \#* ]] && continue
 
-  if (( BATCH_SIZE > 0 && DONE > 0 && DONE % BATCH_SIZE == 0 )); then
-    echo "=== Batch done (${DONE}/${TOTAL} pipelines). Pausing ${BATCH_PAUSE_SECONDS}s for API rate limits (deliberate, not a hang)..."
+  DONE=$((DONE + 1))
+  if (( DONE < START_AT )); then
+    continue
+  fi
+
+  if (( BATCH_SIZE > 0 && RAN > 0 && RAN % BATCH_SIZE == 0 )); then
+    echo "=== Batch done ($(( DONE - 1 ))/${TOTAL} pipelines). Pausing ${BATCH_PAUSE_SECONDS}s for API rate limits (deliberate, not a hang)..."
     sleep "$BATCH_PAUSE_SECONDS"
   fi
-  DONE=$((DONE + 1))
+  RAN=$((RAN + 1))
 
   LABEL="${PIPELINE_ID}${INSTITUTION:+ (institution=${INSTITUTION})}"
   echo ">>> [${DONE}/${TOTAL}] Running metrics for pipeline: ${LABEL}"
